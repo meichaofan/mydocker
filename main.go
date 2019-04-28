@@ -8,8 +8,8 @@ import (
 
 const usage = `my docker is a simple container runtime implement`
 
-//mydocker run -it /bin/bash
-
+// ./mydocker run -it /bin/bash
+// ./mydocker run -it -m 100m -cpushare 512 -cpuset 1 /bin/sh
 func main() {
 	app := cli.NewApp()
 	app.Name = "mydocker"

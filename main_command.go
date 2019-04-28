@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
 	"mydocker/container"
+	"mydocker/cgroups/subsystems"
 )
 
 var runCommand = cli.Command{
@@ -15,6 +16,16 @@ var runCommand = cli.Command{
 		cli.BoolFlag{
 			Name:  "it",
 			Usage: "enable tty",
+		},
+		cli.StringFlag{
+			Name:  "m",
+			Usage: "memory limit",
+		}, cli.StringFlag{
+			Name:  "cpushare",
+			Usage: "cpushare limit",
+		}, cli.StringFlag{
+			Name:  "cpuset",
+			Usage: "cpuset limit",
 		},
 	},
 	/**
@@ -27,9 +38,23 @@ var runCommand = cli.Command{
 		if len(context.Args()) < 1 {
 			return fmt.Errorf("Missing container command")
 		}
-		cmd := context.Args().Get(0)
+
+		var cmdArray []string
+		for _, arg := range context.Args() {
+			cmdArray = append(cmdArray, arg)
+		}
+
+		resConf := &subsystems.ResourceConfig{
+			MemoryLimit: context.String("m"),
+			CpuSet:      context.String("cpuset"),
+			CpuShare:    context.String("cpushare"),
+		}
+
+		//fmt.Printf("%v", *resConf)
+
 		tty := context.Bool("it")
-		Run(tty, cmd)
+
+		Run(tty, cmdArray, resConf)
 		return nil
 	},
 }
@@ -43,9 +68,10 @@ var initCommand = cli.Command{
 	 */
 	Action: func(context *cli.Context) error {
 		logrus.Infof("init come on")
-		cmd := context.Args().Get(0)
-		logrus.Infof("command %s", cmd)
-		err := container.RunContainerInitProcess(cmd, nil)
+		err := container.RunContainerInitProcess()
+		if err != nil {
+			logrus.Errorf("%v", err)
+		}
 		return err
 	},
 }
