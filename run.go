@@ -1,17 +1,17 @@
 package main
 
 import (
-	"mydocker/container"
 	"github.com/Sirupsen/logrus"
-	"os"
-	"mydocker/cgroups/subsystems"
-	"strings"
 	"mydocker/cgroups"
+	"mydocker/cgroups/subsystems"
+	"mydocker/container"
+	"os"
+	"strings"
 )
 
 //启动init进程
-func Run(tty bool, comArray []string, res *subsystems.ResourceConfig) {
-	parent, writePipe := container.NewParentProcess(tty)
+func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, volume string) {
+	parent, writePipe := container.NewParentProcess(tty,volume)
 	if parent == nil {
 		logrus.Error("New parent process error")
 		return
@@ -30,9 +30,9 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig) {
 	parent.Wait()
 
 	// container exit
-	rootURL := "/root/"
-	mntURL := "/root/mnt/"
-	container.DeleteWorkSpace(rootURL,mntURL)
+	rootURL := "/root"
+	mntURL := "/root/mnt"
+	container.DeleteWorkSpace(rootURL, mntURL, volume)
 
 	os.Exit(0)
 }

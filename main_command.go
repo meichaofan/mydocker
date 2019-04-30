@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/urfave/cli"
 	"fmt"
 	"github.com/Sirupsen/logrus"
-	"mydocker/container"
+	"github.com/urfave/cli"
 	"mydocker/cgroups/subsystems"
+	"mydocker/container"
 )
 
 var runCommand = cli.Command{
@@ -26,6 +26,9 @@ var runCommand = cli.Command{
 		}, cli.StringFlag{
 			Name:  "cpuset",
 			Usage: "cpuset limit",
+		}, cli.StringFlag{
+			Name:  "v",
+			Usage: "volume",
 		},
 	},
 	/**
@@ -33,7 +36,7 @@ var runCommand = cli.Command{
 	1. 判断参数是否包含command
 	2. 获取用户指定的command
 	3. 调用 Run function 去准备启动容器
-	 */
+	*/
 	Action: func(context *cli.Context) error {
 		if len(context.Args()) < 1 {
 			return fmt.Errorf("Missing container command")
@@ -53,8 +56,9 @@ var runCommand = cli.Command{
 		//fmt.Printf("%v", *resConf)
 
 		tty := context.Bool("it")
+		volume := context.String("v")
 
-		Run(tty, cmdArray, resConf)
+		Run(tty, cmdArray, resConf,volume)
 		return nil
 	},
 }
@@ -65,7 +69,7 @@ var initCommand = cli.Command{
 	/**
 	1.获取传递过来的command参数
 	2.执行容器初始化操作
-	 */
+	*/
 	Action: func(context *cli.Context) error {
 		logrus.Infof("init come on")
 		err := container.RunContainerInitProcess()
