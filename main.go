@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/urfave/cli"
 	"github.com/Sirupsen/logrus"
+	"github.com/urfave/cli"
 	"os"
 )
 
@@ -18,6 +18,7 @@ func main() {
 	app.Commands = []cli.Command{
 		initCommand,
 		runCommand,
+		commitCommand,
 	}
 
 	//设置日志格式
