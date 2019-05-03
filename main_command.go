@@ -17,6 +17,10 @@ var runCommand = cli.Command{
 			Name:  "it",
 			Usage: "enable tty",
 		},
+		cli.BoolFlag{
+			Name:  "d",
+			Usage: "detach container",
+		},
 		cli.StringFlag{
 			Name:  "m",
 			Usage: "memory limit",
@@ -56,9 +60,13 @@ var runCommand = cli.Command{
 		//fmt.Printf("%v", *resConf)
 
 		tty := context.Bool("it")
-		volume := context.String("v")
+		detach := context.Bool("d")
+		if tty && detach {
+			logrus.Errorf("tty and detach can not both provided")
+		}
 
-		Run(tty, cmdArray, resConf,volume)
+		volume := context.String("v")
+		Run(tty, cmdArray, resConf, volume)
 		return nil
 	},
 }

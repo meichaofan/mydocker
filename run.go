@@ -11,7 +11,7 @@ import (
 
 //启动init进程
 func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, volume string) {
-	parent, writePipe := container.NewParentProcess(tty,volume)
+	parent, writePipe := container.NewParentProcess(tty, volume)
 	if parent == nil {
 		logrus.Error("New parent process error")
 		return
@@ -27,14 +27,14 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, volume str
 	cgroupManager.Apply(parent.Process.Pid)
 
 	sendInitCommand(comArray, writePipe)
-	parent.Wait()
 
-	// container exit
-	rootURL := "/root"
-	mntURL := "/root/mnt"
-	container.DeleteWorkSpace(rootURL, mntURL, volume)
-
-	os.Exit(0)
+	if tty {
+		parent.Wait()
+		// container exit
+		rootURL := "/root"
+		mntURL := "/root/mnt"
+		container.DeleteWorkSpace(rootURL, mntURL, volume)
+	}
 }
 
 func sendInitCommand(comArray []string, writePipe *os.File) {
