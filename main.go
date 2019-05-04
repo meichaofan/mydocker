@@ -19,6 +19,9 @@ func main() {
 		initCommand,
 		runCommand,
 		commitCommand,
+		listCommand,
+		logCommand,
+		execCommand,
 	}
 
 	//设置日志格式
