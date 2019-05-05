@@ -17,6 +17,9 @@ var (
 	DefaultInfoLocation string = "/var/run/mydocker/%s/"
 	ConfigName          string = "config.json"
 	ContainerLogFile    string = "container.log"
+	RootUrl             string = "/root"
+	MntUrl              string = "/root/mnt/%s"
+	WriteLayerUrl       string = "/root/writeLayer/%s"
 )
 
 //记录容器运行的状态
@@ -27,9 +30,10 @@ type ContainerInfo struct {
 	Command    string `json:"command"`    //容器内init运行的命令
 	CreateTime string `json:"createTime"` //容器创建的时间
 	Status     string `json:"status"`     //容器状态
+	Volume     string `json:"volume"`     //目录映射
 }
 
-func NewParentProcess(tty bool, volume string, containerName string) (*exec.Cmd, *os.File) {
+func NewParentProcess(tty bool, volume string, containerName string, imageName string) (*exec.Cmd, *os.File) {
 	readPipe, writePipe, err := NewPipe()
 	if err != nil {
 		logrus.Error("New pipe error %v", err)
@@ -64,11 +68,8 @@ func NewParentProcess(tty bool, volume string, containerName string) (*exec.Cmd,
 
 	cmd.ExtraFiles = []*os.File{readPipe}
 
-	//cmd.Dir = "/root/busybox"
-	rootURL := "/root"
-	mntURL := "/root/mnt"
-	NewWorkSpace(rootURL, mntURL, volume)
-	cmd.Dir = mntURL
+	NewWorkSpace(volume, imageName, containerName)
+	cmd.Dir = fmt.Sprintf(MntUrl, containerName)
 
 	return cmd, writePipe
 }

@@ -23,6 +23,7 @@ func main() {
 		logCommand,
 		execCommand,
 		stopCommand,
+		removeCommand,
 	}
 
 	//设置日志格式

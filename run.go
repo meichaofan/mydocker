@@ -18,8 +18,8 @@ import (
 )
 
 //启动init进程
-func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, volume string, containerName string) {
-	parent, writePipe := container.NewParentProcess(tty, volume, containerName)
+func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, volume string, containerName string, imageName string) {
+	parent, writePipe := container.NewParentProcess(tty, volume, containerName, imageName)
 	if parent == nil {
 		logrus.Error("New parent process error")
 		return
@@ -29,7 +29,7 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, volume str
 	}
 
 	//记录容器信息
-	err := recordContainerInfo(parent.Process.Pid, comArray, containerName)
+	err := recordContainerInfo(parent.Process.Pid, comArray, containerName, volume)
 	if err != nil {
 		logrus.Errorf("Record container info error %v", err)
 		return
@@ -47,9 +47,7 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, volume str
 	if tty {
 		parent.Wait()
 		// container exit
-		rootURL := "/root"
-		mntURL := "/root/mnt"
-		container.DeleteWorkSpace(rootURL, mntURL, volume)
+		container.DeleteWorkSpace(volume, containerName)
 		deleteContainerInfo(containerName)
 	}
 }
@@ -61,11 +59,11 @@ func sendInitCommand(comArray []string, writePipe *os.File) {
 	writePipe.Close()
 }
 
-func recordContainerInfo(containerPID int, commandArray []string, containerName string) error {
+func recordContainerInfo(containerPID int, commandArray []string, containerName string, volume string) error {
 	//生成10位数的容器id
 	id := randStringBytes(10)
 	//以当前时间作为容器创建时间
-	createTime := time.Now().Format("2006-01-02 15:04:05")
+	createTime := time.Now().Format("2016-01-02 15:04:05")
 	command := strings.Join(commandArray, " ")
 	//如果不指定容器名，那么就以容器id作为容器名
 	if containerName == "" {
@@ -79,6 +77,7 @@ func recordContainerInfo(containerPID int, commandArray []string, containerName 
 		CreateTime: createTime,
 		Status:     container.RUNNING,
 		Name:       containerName,
+		Volume:     volume,
 	}
 
 	//将容器对象json序列化成字符串

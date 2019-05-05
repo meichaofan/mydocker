@@ -56,6 +56,9 @@ var runCommand = cli.Command{
 		for _, arg := range context.Args() {
 			cmdArray = append(cmdArray, arg)
 		}
+		//首先获取image name
+		imageName := cmdArray[0]
+		cmdArray = cmdArray[1:]
 
 		resConf := &subsystems.ResourceConfig{
 			MemoryLimit: context.String("m"),
@@ -77,7 +80,7 @@ var runCommand = cli.Command{
 		//将取到的容器名称传递下去，如果没有指定设置为空
 		containerName := context.String("name")
 
-		Run(tty, cmdArray, resConf, volume, containerName)
+		Run(tty, cmdArray, resConf, volume, containerName, imageName)
 		return nil
 	},
 }
@@ -103,11 +106,12 @@ var commitCommand = cli.Command{
 	Name:  "commit",
 	Usage: "commit a container into image",
 	Action: func(context *cli.Context) error {
-		if len(context.Args()) < 1 {
+		if len(context.Args()) < 2 {
 			logrus.Errorf("Missing image name")
 		}
-		imageName := context.Args().Get(0)
-		commitContainer(imageName)
+		containerName := context.Args().Get(0)
+		imageName := context.Args().Get(1)
+		commitContainer(containerName, imageName)
 		return nil
 	},
 }
@@ -171,6 +175,20 @@ var stopCommand = cli.Command{
 		}
 		containerName := ctx.Args().Get(0)
 		stopContainer(containerName)
+		return nil
+	},
+}
+
+// mydocker rm 容器名
+var removeCommand = cli.Command{
+	Name:  "rm",
+	Usage: "remove a container",
+	Action: func(ctx *cli.Context) error {
+		if len(ctx.Args()) < 1 {
+			return fmt.Errorf("Missing container name")
+		}
+		containerName := ctx.Args().Get(0)
+		removeContainer(containerName)
 		return nil
 	},
 }
